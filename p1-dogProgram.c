@@ -4,14 +4,14 @@
 #define SizePetData sizeof(struct petData)
 const int hashSize = 2000;
 struct petData{
-		char name[32];
-		char kind[32];
-		int age;
-		char breed[16];
-		int height;
-		float weight ;
-		char sex ;
-		int next;
+	char name[32];
+	char kind[32];
+	int age;
+	char breed[16];
+	int height;
+	float weight ;
+	char sex ;
+//	int next;
 };
 
 int hash(char *st)
@@ -59,10 +59,23 @@ int getnReg(void *ap){
 	FILE *dt = ap;
 	fseek(dt,0,SEEK_END);
 	int len = ftell(dt);
-	printf("File size %d \n" , len);
 	return len/SizePetData;
-
 }
+/*
+void warningMenu(void *ap, int n){
+	int *numReg;
+	int nReg = n;
+	numReg = malloc(sizeof(int));	
+	numReg = ap ;
+	printf("La cantidad de registros es %i \n" , nReg);
+	int Register = *numReg;
+	while (Register > nReg || Register < 1){
+		printf("Numero de registro invalido. Intente de nuevo: \n");
+		scanf("%i",numReg);
+	}
+   	free(numReg);
+	return;
+} */
 void receiveReg(void *ap){
 	struct petData *pet;
 	pet = ap;
@@ -87,46 +100,58 @@ void  inputData(){
 	pet = malloc(SizePetData);
 	FILE *dt = fopen("dataDogs.data","a");
 	receiveReg(pet);
-	animalPrint(pet);
 	fwrite(pet,SizePetData,1,dt);
-	printf("Finish. \n Num Reg %i\n",getnReg(dt));
+	printf("Finish. \nNum Reg %i\n",getnReg(dt));
 	fclose(dt);
 	free(pet);
-	printMenu();
 	return;
 }
 void showData() {
 	FILE *dt = fopen("dataDogs.data","r");
 	struct petData *pet;
 	printf("print\n");
-	printf(" num reg : %i \n" ,getnReg(dt));
+	printf("Numero de registros : %i \n" ,getnReg(dt));
 	printf("Ingrese el numero de registro que desea ver \n" );
 	int indReg;
-	scanf("%i",&indReg);
+	scanf("%i",&indReg);	
+	while (indReg > getnReg(dt)||indReg < 1){
+		printf("Numero de registro invalido. Intente de nuevo: \n");
+		scanf("%i",&indReg);
+	}
 	fseek(dt, SizePetData*(indReg-1), SEEK_SET);
 	pet = malloc(SizePetData);
 	fread(pet,SizePetData,1,dt);
 	animalPrint(pet);
 	free(pet);
 	fclose(dt);
-	printMenu();
-}
+}	
 void delete(){
 	FILE *dt;
 	FILE *newdt;
 	struct petData* pet ;
 	dt = fopen("dataDogs.data", "a+");
-	int numReg;
+	int numRegDel;
 	int nReg = getnReg(dt);
 	printf("El numero actual de registros es: %i \n " , nReg );
 	printf("Ingrese el numero de registro que desea borrar: \n");
-	scanf("%i" , &numReg );
-   	newdt =	fopen("dataDogsNew.data" , "a+");
-	int deleteable = (numReg-1) * SizePetData ;
+	scanf("%i" , &numRegDel );
+//	warningMenu(&numRegDel,nReg);	
+	while (numRegDel > nReg||numRegDel < 1){
+		printf("Numero de registro invalido. Intente de nuevo: \n");
+		scanf("%i",&numRegDel);
+	}
+	newdt =	fopen("dataDogsNew.data" , "a+");
+	struct petData *tmp ; 
+	tmp = malloc(SizePetData);
+	fseek(dt,SizePetData*(nReg-1), SEEK_SET);
+	fread(tmp, SizePetData ,1,dt);
 	pet = malloc(SizePetData);
-	for ( int i = 0 ; i < nReg ; i ++){
-		if( i == numReg-1) continue;
+	for ( int i = 0 ; i < nReg-1 ; i ++){
 		fseek(dt,SizePetData*i, SEEK_SET);
+		if( i == numRegDel-1) {
+			fwrite(tmp,SizePetData,1,newdt);
+			continue;
+		}
 		fread(pet , SizePetData,1,dt);
 		fwrite(pet,SizePetData , 1 , newdt);
 	}
@@ -135,8 +160,7 @@ void delete(){
 	fclose(newdt);
 	remove("dataDogs.data");
 	rename("dataDogsNew.data" , "dataDogs.data");
-	printf("Registro %i removido de manera exitosa \n",numReg);
-	printMenu();
+	printf("Registro %i removido de manera exitosa \n",numRegDel);;
 	return;
 
 }
@@ -144,16 +168,15 @@ void search(){
 	return;
 }
 void exitApp(){
+	printf("Vuelva pronto \n");
 	exit(0);
 }
-
-void warningMenu(){
+void invalidOption(){
+	printf("Usted ha seleccionado una opcion invalida. Intente de nuevo. \n" );
 	return;
 }
 int main (){
 		struct petData* pet;
-		printf("%d\n",hash("Peto"));
-		return 0;
 		pet = malloc(sizeof (struct petData));
 		printMenu();
 		int option ;
@@ -175,9 +198,10 @@ int main (){
 					exitApp();
 					break;
 				default :
-					warningMenu();
+					invalidOption();
 
 			}
+			printMenu();
 		}
 		free(pet);
 		return 0 ;

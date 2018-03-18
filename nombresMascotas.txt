@@ -30,7 +30,7 @@ Alfredo
 Ali
 Alipio
 Alonso
-Álvaro
+Alvaro
 Amadeo
 Amancio
 Amaro
@@ -40,7 +40,7 @@ Amilcar
 Amintas
 Andres
 Andy
-Ángel
+Angel
 Angus
 Anibal
 Anko
@@ -665,7 +665,7 @@ Huno
 Husky
 Hyron
 Icaro
-Ícaro
+Icaro
 Ice
 Ignacio
 Igor
@@ -686,7 +686,7 @@ Isker
 Ismael
 Ispi
 Israel
-Ítalo
+Italo
 Ivan
 Ivan
 Izbor
@@ -1078,7 +1078,7 @@ Orots
 Ortzi
 Ortzin
 Ory
-Óscar
+Oscar
 Oso
 Osvaldo
 Otho

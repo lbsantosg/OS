@@ -29,7 +29,12 @@ int hash(char *st)
 	}
 	return hash;
 }
-
+void toContinue(){
+	printf("Precione C para continuar \n " );
+	char option ;
+	while(	scanf(" %c" , &option)){
+	return;}
+}
 void animalPrint(void *ap){
 	struct petData *pet;
 	pet = ap;
@@ -141,10 +146,11 @@ void  inputData(){
 	FILE *dt = fopen("dataDogs.data","a");
 	receiveReg(pet);
 	fwrite(pet,SizePetData,1,dt);
-	printf("Finish. \nNum Reg %i\n",getnReg(dt));
+	printf("Registro agregado de manera exitosa. \nNum Reg %i\n",getnReg(dt));
 	fclose(dt);
 	hashLastItem(pet);
 	free(pet);
+	toContinue();
 	return;
 }
 void showData() {
@@ -165,6 +171,8 @@ void showData() {
 	animalPrint(pet);
 	free(pet);
 	fclose(dt);
+	toContinue();
+	return;
 }
 void fixHash(int ind)
 {
@@ -285,6 +293,7 @@ void delete(){
 	remove("dataDogs.data");
 	rename("dataDogsNew.data" , "dataDogs.data");
 	printf("Registro %i removido de manera exitosa \n",numRegDel);;
+	toContinue();
 	return;
 
 }
@@ -326,6 +335,7 @@ void search(){
 	free(pet);
 	fclose(hashTable);
 	fclose(dt);
+	toContinue();
 	return;
 }
 void exitApp(){
@@ -342,7 +352,9 @@ int main (){
 		pet = malloc(sizeof (struct petData));
 		printMenu();
 		int option ;
+
 		while(	scanf("%i" , &option)){
+
 			switch(option){
 				case 1 :
 					inputData();

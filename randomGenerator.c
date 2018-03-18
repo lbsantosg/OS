@@ -37,9 +37,12 @@ void initHashFile()
 	fp = fopen("hash.dat","w");
 	int nu = -1;
 	for(int i = 0 ; i < hashSize ; i ++ )
+	{
+		hashLast[i] = -1;
 		fwrite(&nu,sizeof(int),1,fp);
+	}
 	fclose(fp);
-	memset(hashLast,-1,sizeof(hashLast));
+	//	memset(hashLast,-1,sizeof(hashLast));
 	return;
 }
 
@@ -78,52 +81,37 @@ void initHash()
 	int n = NumberRegisters ;
 	struct petData *pet;
 	pet = malloc(sizeof(struct petData));
+	int dif;
+	int obj;
+	fread(pet,SizePetData,1,data);
 	for ( int i = 0 ; i < n ; i ++ )
 	{
-		printf("%d\n",i);
-		fseek(data,SizePetData*i,SEEK_SET);
+		obj = SizePetData*i;
+		dif = obj - ftell(data);
+		fseek(data,dif,SEEK_CUR);
 		fread(pet, SizePetData,1,data);
 		int indHash = hash(pet->name);
 		fseek(hashTable, sizeof(int) * indHash, SEEK_SET);
 		int next = hashLast[indHash];
-		//fread(&next, sizeof(int),1,hashTable);
-	//	printf("%s %d %d\n",pet->name,indHash,next);
 		if( hashLast[indHash] == -1 )
 		{
-	//		printf("%d %s\n",i,pet->name);
 			fseek(hashTable,sizeof(int)*indHash,SEEK_SET);
 			fwrite(&i,sizeof(int),1,hashTable);
-//			fclose(hashTable);
-//			hashTable = fopen("hash.dat","r+");
 			hashLast[indHash] = i;
 		}
 		else
 		{
-			struct petData *tmp;
-			tmp = malloc(sizeof(struct petData));	
-			while(1<2){
-				fseek(data,SizePetData*next,SEEK_SET);
-				fread(tmp,SizePetData,1,data);
-				printf("while suposed to be 1 %s\n",tmp->name);
-				if(tmp->next == -1)
-				{
-			//		printf("enter here\n");
-					tmp->next = i;
-					fseek(data,SizePetData*next,SEEK_SET);				
-					fwrite(tmp,SizePetData,1,data);
-					hashLast[indHash] = i;
-					//fclose(data);
-					//data = fopen("dataDogs.data","r+");
-					break;
-				}
-				else
-				{
-					next = tmp->next;
-				}
-			}
-			free(tmp);
+			fseek(data,SizePetData*next,SEEK_SET);
+			fread(pet,SizePetData,1,data);
+			pet->next = i;
+			obj = SizePetData*next;
+			dif = obj - ftell(data);
+			fseek(data,dif,SEEK_CUR);				
+			fwrite(pet,SizePetData,1,data);
+			hashLast[indHash] = i;
 		}
 	}
+	free(pet);
 	fclose(hashTable);
 	fclose(data);
 	return;

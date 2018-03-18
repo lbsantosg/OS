@@ -255,13 +255,15 @@ void delete(){
 	printf("Ingrese el numero de registro que desea borrar: \n");
 	fclose(dt);
 	scanf("%i" , &numRegDel );
-//	fixHash(numRegDel);
+	fixHash(numRegDel);
 	dt = fopen("dataDogs.data","a+");
 //	warningMenu(&numRegDel,nReg);	
 	while (numRegDel > nReg||numRegDel < 1){
 		printf("Numero de registro invalido. Intente de nuevo: \n");
 		scanf("%i",&numRegDel);
 	}
+	
+//	printf("while suposed to be 1\n");
 	newdt =	fopen("dataDogsNew.data" , "a+");
 	struct petData *tmp ; 
 	tmp = malloc(SizePetData);
@@ -301,6 +303,8 @@ void search(){
 	fread(&next,sizeof(int),1,hashTable);
 	struct petData *pet;
 	pet = malloc(SizePetData);
+	for(int i = 0 ; i < strlen(toSearch); i ++ )
+		toSearch[i] = tolower(toSearch[i]);
 	while(next!=-1)
 	{
 		fseek(dt,SizePetData*next,SEEK_SET);
@@ -309,6 +313,7 @@ void search(){
 		strcpy(tmp,pet->name);
 		for(int i = 0 ; i < strlen(tmp); i ++ )
 			tmp[i] = tolower(tmp[i]);
+		
 		if(strcmp(toSearch,tmp) == 0 )
 		{
 			printf("Registro en la posicion %d\n",(next+1));

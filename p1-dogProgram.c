@@ -2,6 +2,7 @@
 #include "stdlib.h"
 #include "string.h"
 #include "ctype.h"
+#include "unistd.h"
 #define SizePetData sizeof(struct petData)
 const int hashSize = 7919;
 struct petData{
@@ -32,9 +33,8 @@ int hash(char *st)
 void toContinue(){
 	printf("Ingrese C para continuar \n " );
 	char option;
-    while(scanf(" %c" , &option)){
-		return;
-	}
+    scanf(" %c" , &option);
+	return;
 }	
 void animalPrint(void *ap){
 	struct petData *pet;
@@ -67,15 +67,15 @@ int getnReg(void *ap){
 	FILE *dt = ap;
 	fseek(dt,0,SEEK_END);
 	int len = ftell(dt);
-	printf(" n  %i \n" , len);
 	return len/SizePetData;
 }
-void NameClinicHistory(int n , void *reg)
+void NameClinicHistory(int n , void *rg)
 {
     int a = n;
+	char *reg = rg;
     char inte[10];
     sprintf(inte,"%d",a);
-    char cmd[50] = "nano historiaClinica-";
+    char cmd[50] = "historiaClinica-";
     char end[5] = ".txt";
     strcat(cmd,inte);
     strcat(cmd,end);
@@ -145,7 +145,6 @@ void  inputData(){
 	pet = malloc(SizePetData);
 	FILE *dt = fopen("dataDogs.data","a");
 	receiveReg(pet);
-	animalPrint(pet);
 	fwrite(pet,SizePetData,1,dt);
 	printf("Registro agregado de manera exitosa. \nNum Reg %i\n",getnReg(dt));
 	fclose(dt);
@@ -175,13 +174,34 @@ void showData() {
 	fclose(dt);
 	char opt; 
 	scanf(" %c" , &opt ) ; 
-	char cmd[50];
+	char name[20];
+	char cmd[50] = "nano ";
 	if ( opt == 'y' || opt == 'Y' ){
-		NameClinicHistory(indReg,cmd);
+		NameClinicHistory(indReg,name);
+		strcat(cmd,name);
 		system(cmd);
 	}
 	toContinue();
 	return;
+}
+void delClinicHistory(){
+	int lastIndex;
+	int delIndex;
+	char nameCHDel[30];
+	char nameCHLast[30];
+	char cmd[50];
+   	NameClinicHistory(delIndex,nameCHDel);
+	NameClinicHistory(lastIndex,nameCHLast);
+	int chexistDel = access(nameCHDel , F_OK);
+	int chexistLast = acces(nameCHLast , F_OK);
+	if(chexistDel == 0){
+		printf("el que voy a borrar si tiene historia clinica \n"); 
+		cmd = "rm "
+		strcat(cmd , nameCHDel);
+		printf("%s \n" , cmd);
+		system(cmd);	
+	}
+	
 }
 void fixHash(int ind)
 {
@@ -192,7 +212,6 @@ void fixHash(int ind)
 	struct petData *pet;
 	pet = malloc(SizePetData);
 	ind = ind - 1 ;
-//	int chexist = acces("" , F_OK); 
 	int indLast = getnReg(dt) -1;
 	fseek(dt,SizePetData*indLast,SEEK_SET);
 	fread(pet,SizePetData,1,dt);
@@ -204,6 +223,7 @@ void fixHash(int ind)
 	{
 		fseek(hashTable,sizeof(int)*hashInd,SEEK_SET);
 		fwrite(&ind,sizeof(int),1,hashTable);
+
 	}
 	else
 	{

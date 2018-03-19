@@ -4,7 +4,7 @@
 #include <time.h>
 #include <stdlib.h>
 #define SizePetData sizeof(struct petData)
-const int NumberRegisters = 10000000;
+const int NumberRegisters = 1000;
 const int hashSize = 7919;
 int hashLast[10000];
 struct petData{

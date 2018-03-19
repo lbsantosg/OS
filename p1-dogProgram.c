@@ -1,3 +1,4 @@
+
 #include"stdio.h"
 #include "stdlib.h"
 #include "string.h"
@@ -33,9 +34,10 @@ int hash(char *st)
 void toContinue(){
 	printf("Ingrese C para continuar \n " );
 	char option;
-    scanf(" %c" , &option);
-	return;
-}	
+    while(scanf(" %c" , &option)){
+		return;
+	}
+}
 void animalPrint(void *ap){
 	struct petData *pet;
 	pet = ap;
@@ -48,15 +50,15 @@ void animalPrint(void *ap){
 	printf("    Peso: %f \n" , pet->weight);
 	printf("    Sexo: %c \n" , pet->sex);
 	printf("******************************************************\n");
-	
+
 }
 
 void printMenu(){
 	printf("******************************************************\n");
 	printf("            Seleccione su opcion:\n");
 	printf("            1 Para ingresar datos\n");
-    printf("            2 Para ver un registro\n");
-    printf("            3 Para eliminar un registro\n");
+  printf("            2 Para ver un registro\n");
+  printf("            3 Para eliminar un registro\n");
 	printf("            4 Para buscar un registro\n");
 	printf("            5 Para salir\n" );
 	printf("******************************************************\n        ");
@@ -67,12 +69,12 @@ int getnReg(void *ap){
 	FILE *dt = ap;
 	fseek(dt,0,SEEK_END);
 	int len = ftell(dt);
+	printf(" n  %i \n" , len);
 	return len/SizePetData;
 }
-void NameClinicHistory(int n , void *rg)
+void NameClinicHistory(int n , void *reg)
 {
     int a = n;
-	char *reg = rg;
     char inte[10];
     sprintf(inte,"%d",a);
     char cmd[50] = "historiaClinica-";
@@ -80,7 +82,7 @@ void NameClinicHistory(int n , void *rg)
     strcat(cmd,inte);
     strcat(cmd,end);
 	strcpy(reg , cmd);
-    return; 
+    return;
 }
 
 void receiveReg(void *ap){
@@ -145,6 +147,7 @@ void  inputData(){
 	pet = malloc(SizePetData);
 	FILE *dt = fopen("dataDogs.data","a");
 	receiveReg(pet);
+	animalPrint(pet);
 	fwrite(pet,SizePetData,1,dt);
 	printf("Registro agregado de manera exitosa. \nNum Reg %i\n",getnReg(dt));
 	fclose(dt);
@@ -160,7 +163,7 @@ void showData() {
 	printf("Numero de registros : %i \n" ,getnReg(dt));
 	printf("Ingrese el numero de registro que desea ver \n" );
 	int indReg;
-	scanf("%i",&indReg);	
+	scanf("%i",&indReg);
 	while (indReg > getnReg(dt)||indReg < 1){
 		printf("Numero de registro invalido. Intente de nuevo: \n");
 		scanf("%i",&indReg);
@@ -172,36 +175,49 @@ void showData() {
 	printf("Desea abrir historial medico? Precione Y para abirlo, N para continuar \n");
 	free(pet);
 	fclose(dt);
-	char opt; 
-	scanf(" %c" , &opt ) ; 
-	char name[20];
-	char cmd[50] = "nano ";
+	char opt;
+	scanf(" %c" , &opt ) ;
+	char cmd1[50] = "nano ";
+	char cmd[20] ;
 	if ( opt == 'y' || opt == 'Y' ){
-		NameClinicHistory(indReg,name);
-		strcat(cmd,name);
-		system(cmd);
+		NameClinicHistory(indReg,cmd);
+		strcat(cmd1 , cmd);
+		system(cmd1);
 	}
 	toContinue();
 	return;
 }
-void delClinicHistory(){
-	int lastIndex;
-	int delIndex;
+void delClinicHistory(int _delIndex, int _lastIndex){
+	int lastIndex = _lastIndex;
+	int delIndex = _delIndex;
 	char nameCHDel[30];
 	char nameCHLast[30];
-	char cmd[50];
-   	NameClinicHistory(delIndex,nameCHDel);
+	char cmd[50] = "rm ";
+	char cmd1[50] = "rename(";
+	char cmd2[3] = ",";
+	char cmd3[3] = ")";
+	NameClinicHistory(delIndex,nameCHDel);
 	NameClinicHistory(lastIndex,nameCHLast);
 	int chexistDel = access(nameCHDel , F_OK);
-	int chexistLast = acces(nameCHLast , F_OK);
+	int chexistLast = access(nameCHLast , F_OK);
+	printf("el que se borra %s y existe %i \n" , nameCHDel, chexistDel);
+	printf("el ultimo %s y existe %i \n" , nameCHLast, chexistLast);
 	if(chexistDel == 0){
-		printf("el que voy a borrar si tiene historia clinica \n"); 
-		cmd = "rm "
+		printf("el que voy a borrar si tiene historia clinica \n");
 		strcat(cmd , nameCHDel);
 		printf("%s \n" , cmd);
-		system(cmd);	
+		system(cmd);
 	}
-	
+	if(chexistLast == 0){
+		printf("el que esta ultimo si tiene historia clinica \n");
+		strcat(cmd1,nameCHLast);
+		strcat(cmd1,cmd2);
+		strcat(cmd1,nameCHDel);
+		strcat(cmd1,cmd3);
+		printf("%s \n" , cmd1);
+		system(cmd);
+	}
+	return;
 }
 void fixHash(int ind)
 {
@@ -223,7 +239,6 @@ void fixHash(int ind)
 	{
 		fseek(hashTable,sizeof(int)*hashInd,SEEK_SET);
 		fwrite(&ind,sizeof(int),1,hashTable);
-
 	}
 	else
 	{
@@ -296,7 +311,7 @@ void delete(){
 	fixHash(numRegDel);
 	dt = fopen("dataDogs.data","a+");
 	newdt =	fopen("dataDogsNew.data" , "a+");
-	struct petData *tmp ; 
+	struct petData *tmp ;
 	tmp = malloc(SizePetData);
 	fseek(dt,SizePetData*(nReg-1), SEEK_SET);
 	fread(tmp, SizePetData ,1,dt);
@@ -310,6 +325,7 @@ void delete(){
 		fread(pet , SizePetData,1,dt);
 		fwrite(pet,SizePetData , 1 , newdt);
 	}
+	delClinicHistory(numRegDel,nReg);
 	free(pet);
 	fclose(dt);
 	fclose(newdt);
@@ -345,7 +361,7 @@ void search(){
 		strcpy(tmp,pet->name);
 		for(int i = 0 ; i < strlen(tmp); i ++ )
 			tmp[i] = tolower(tmp[i]);
-		
+
 		if(strcmp(toSearch,tmp) == 0 )
 		{
 			printf("Registro en la posicion %d\n",(next+1));

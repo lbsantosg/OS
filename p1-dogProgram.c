@@ -30,10 +30,9 @@ int hash(char *st)
 	return hash;
 }
 void toContinue(){
-	printf("Precione C para continuar \n " );
-	char option ;
-	while(	scanf(" %c" , &option)){
-	return;}
+	printf("Ingrese C para continuar \n " );
+	scanf(" %*c");
+	return;
 }
 void animalPrint(void *ap){
 	struct petData *pet;
@@ -263,14 +262,14 @@ void delete(){
 	printf("Ingrese el numero de registro que desea borrar: \n");
 	fclose(dt);
 	scanf("%i" , &numRegDel );
-	fixHash(numRegDel);
-	dt = fopen("dataDogs.data","a+");
-//	warningMenu(&numRegDel,nReg);	
+	//	warningMenu(&numRegDel,nReg);	
 	while (numRegDel > nReg||numRegDel < 1){
 		printf("Numero de registro invalido. Intente de nuevo: \n");
 		scanf("%i",&numRegDel);
 	}
-	
+	fixHash(numRegDel);
+	dt = fopen("dataDogs.data","a+");
+
 //	printf("while suposed to be 1\n");
 	newdt =	fopen("dataDogsNew.data" , "a+");
 	struct petData *tmp ; 

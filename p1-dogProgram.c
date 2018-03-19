@@ -69,7 +69,6 @@ int getnReg(void *ap){
 	FILE *dt = ap;
 	fseek(dt,0,SEEK_END);
 	int len = ftell(dt);
-	printf(" n  %i \n" , len);
 	return len/SizePetData;
 }
 void NameClinicHistory(int n , void *reg)
@@ -147,7 +146,6 @@ void  inputData(){
 	pet = malloc(SizePetData);
 	FILE *dt = fopen("dataDogs.data","a");
 	receiveReg(pet);
-	animalPrint(pet);
 	fwrite(pet,SizePetData,1,dt);
 	printf("Registro agregado de manera exitosa. \nNum Reg %i\n",getnReg(dt));
 	fclose(dt);
@@ -192,30 +190,15 @@ void delClinicHistory(int _delIndex, int _lastIndex){
 	int delIndex = _delIndex;
 	char nameCHDel[30];
 	char nameCHLast[30];
-	char cmd[50] = "rm ";
-	char cmd1[50] = "rename(";
-	char cmd2[3] = ",";
-	char cmd3[3] = ")";
 	NameClinicHistory(delIndex,nameCHDel);
 	NameClinicHistory(lastIndex,nameCHLast);
 	int chexistDel = access(nameCHDel , F_OK);
 	int chexistLast = access(nameCHLast , F_OK);
-	printf("el que se borra %s y existe %i \n" , nameCHDel, chexistDel);
-	printf("el ultimo %s y existe %i \n" , nameCHLast, chexistLast);
 	if(chexistDel == 0){
-		printf("el que voy a borrar si tiene historia clinica \n");
-		strcat(cmd , nameCHDel);
-		printf("%s \n" , cmd);
-		system(cmd);
+		remove(nameCHDel);
 	}
 	if(chexistLast == 0){
-		printf("el que esta ultimo si tiene historia clinica \n");
-		strcat(cmd1,nameCHLast);
-		strcat(cmd1,cmd2);
-		strcat(cmd1,nameCHDel);
-		strcat(cmd1,cmd3);
-		printf("%s \n" , cmd1);
-		system(cmd);
+		rename(nameCHLast, nameCHDel);
 	}
 	return;
 }
@@ -386,7 +369,6 @@ void invalidOption(){
 	return;
 }
 int main (){
-//		printHashTable();
 		struct petData* pet;
 		pet = malloc(sizeof (struct petData));
 		printMenu();

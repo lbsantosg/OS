@@ -31,9 +31,11 @@ int hash(char *st)
 }
 void toContinue(){
 	printf("Ingrese C para continuar \n " );
-	scanf(" %*c");
-	return;
-}
+	char option;
+    while(scanf(" %c" , &option)){
+		return;
+	}
+}	
 void animalPrint(void *ap){
 	struct petData *pet;
 	pet = ap;
@@ -65,23 +67,22 @@ int getnReg(void *ap){
 	FILE *dt = ap;
 	fseek(dt,0,SEEK_END);
 	int len = ftell(dt);
+	printf(" n  %i \n" , len);
 	return len/SizePetData;
 }
-/*
-void warningMenu(void *ap, int n){
-	int *numReg;
-	int nReg = n;
-	numReg = malloc(sizeof(int));	
-	numReg = ap ;
-	printf("La cantidad de registros es %i \n" , nReg);
-	int Register = *numReg;
-	while (Register > nReg || Register < 1){
-		printf("Numero de registro invalido. Intente de nuevo: \n");
-		scanf("%i",numReg);
-	}
-   	free(numReg);
-	return;
-} */
+void NameClinicHistory(int n , void *reg)
+{
+    int a = n;
+    char inte[10];
+    sprintf(inte,"%d",a);
+    char cmd[50] = "nano historiaClinica-";
+    char end[5] = ".txt";
+    strcat(cmd,inte);
+    strcat(cmd,end);
+	strcpy(reg , cmd);
+    return; 
+}
+
 void receiveReg(void *ap){
 	struct petData *pet;
 	pet = ap;
@@ -144,6 +145,7 @@ void  inputData(){
 	pet = malloc(SizePetData);
 	FILE *dt = fopen("dataDogs.data","a");
 	receiveReg(pet);
+	animalPrint(pet);
 	fwrite(pet,SizePetData,1,dt);
 	printf("Registro agregado de manera exitosa. \nNum Reg %i\n",getnReg(dt));
 	fclose(dt);
@@ -168,8 +170,16 @@ void showData() {
 	pet = malloc(SizePetData);
 	fread(pet,SizePetData,1,dt);
 	animalPrint(pet);
+	printf("Desea abrir historial medico? Precione Y para abirlo, N para continuar \n");
 	free(pet);
 	fclose(dt);
+	char opt; 
+	scanf(" %c" , &opt ) ; 
+	char cmd[50];
+	if ( opt == 'y' || opt == 'Y' ){
+		NameClinicHistory(indReg,cmd);
+		system(cmd);
+	}
 	toContinue();
 	return;
 }
@@ -182,6 +192,7 @@ void fixHash(int ind)
 	struct petData *pet;
 	pet = malloc(SizePetData);
 	ind = ind - 1 ;
+//	int chexist = acces("" , F_OK); 
 	int indLast = getnReg(dt) -1;
 	fseek(dt,SizePetData*indLast,SEEK_SET);
 	fread(pet,SizePetData,1,dt);
@@ -193,8 +204,6 @@ void fixHash(int ind)
 	{
 		fseek(hashTable,sizeof(int)*hashInd,SEEK_SET);
 		fwrite(&ind,sizeof(int),1,hashTable);
-//		fclose(hashTable);
-//		hashTable = fopen("hash.dat","r+");
 	}
 	else
 	{
@@ -207,8 +216,6 @@ void fixHash(int ind)
 				pet->next = ind;
 				fseek(dt,SizePetData*next,SEEK_SET);
 				fwrite(pet,SizePetData,1,dt);
-		//		fclose(dt);
-	//			dt = fopen("dataDogs.data","r+");
 				break;
 			}
 			else
@@ -262,15 +269,12 @@ void delete(){
 	printf("Ingrese el numero de registro que desea borrar: \n");
 	fclose(dt);
 	scanf("%i" , &numRegDel );
-	//	warningMenu(&numRegDel,nReg);	
 	while (numRegDel > nReg||numRegDel < 1){
 		printf("Numero de registro invalido. Intente de nuevo: \n");
 		scanf("%i",&numRegDel);
 	}
 	fixHash(numRegDel);
 	dt = fopen("dataDogs.data","a+");
-
-//	printf("while suposed to be 1\n");
 	newdt =	fopen("dataDogsNew.data" , "a+");
 	struct petData *tmp ; 
 	tmp = malloc(SizePetData);

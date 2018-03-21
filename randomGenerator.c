@@ -126,7 +126,7 @@ void initHash()
 
 int main()
 {
-	srand(time(NULL));
+  srand(time(NULL));
   char names[2000][32];
   char tmp[32];
 	FILE *fp;
@@ -143,17 +143,17 @@ int main()
 	//creates NumberRegisters registers and store them in DataDogs.dat
   for ( int i = 0 ; i < NumberRegisters; i ++ )
   {
-		// randomly select the properties and store them on pet
-    r = rand()%cn; // select a random name
+		// randomly selects the properties and store them on pet
+    r = rand()%cn; // selects a random name
     strcpy(reg->name,names[r]);
     strcpy(reg->kind, "Perro");
-    reg->age = rand()%12;// select a random age between 0 and 12
-    reg->sex = ( (rand()%2) ? 'M' : 'F'); // select the sex
-    float w = (rand()% 600) + 1; // select the weight
+    reg->age = rand()%12;// selects a random age between 0 and 12
+    reg->sex = ( (rand()%2) ? 'M' : 'F'); // selects the sex
+    float w = (rand()% 600) + 1; // selects the weight
     w /= 10.0;
     reg->weight = w;
     reg->height = (rand() % 120) + 10;
-		// select one breed from a list of breeds
+		// selects one breed from a list of breeds
     int ind = rand() % 7;
     switch (ind)
     {
@@ -180,7 +180,7 @@ int main()
               break;
     }
 		reg->next = -1; // at the beggining the hash hasn't been created
-    fwrite(reg,sizeof(struct petData),1,fp); // store pet in DataDogs.dat
+    fwrite(reg,sizeof(struct petData),1,fp); // stores pet in DataDogs.dat
   }
     free(reg);
     fclose(fp);

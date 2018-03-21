@@ -1,4 +1,9 @@
 
+
+// to reserve space in memmory is used the maloc function
+// when the space is not needed anymore is used the free() function to free the space
+
+
 #include"stdio.h"
 #include "stdlib.h"
 #include "string.h"
@@ -6,6 +11,9 @@
 #include "unistd.h"
 #define SizePetData sizeof(struct petData)
 const int hashSize = 7919;
+//declaration of the struct to save the information of a pet
+// the next atribute stores the index of the next element of the file with the same hash name
+// or -1 if that element doesnt exists
 struct petData{
 	char name[32];
 	char kind[32];
@@ -19,7 +27,7 @@ struct petData{
 
 int hash(char *st)
 {
-	// Hash function: recieve one character string and return an integer
+	// Hash function: recieve one character pointer of a string and return an integer
 	int size = strlen(st);
 	int b = 26;
 	int mult = 1;
@@ -32,7 +40,10 @@ int hash(char *st)
 	}
 	return hash;
 }
+
 void toContinue(){
+	//a function that receives a character from console 
+	//its used to wait for a confirmation to continue by the user
 	printf("Ingrese C para continuar \n " );
 	char option;
     while(scanf(" %c" , &option)){
@@ -40,6 +51,8 @@ void toContinue(){
 	}
 }
 void animalPrint(void *ap){
+	// a function that receive a pointer *ap where is stored a struct petData
+	// and then print its data on the console
 	struct petData *pet;
 	pet = ap;
 	printf("******************************************************\n");
@@ -55,11 +68,12 @@ void animalPrint(void *ap){
 }
 
 void printMenu(){
+	// print the information of the main menu of  the app
 	printf("******************************************************\n");
 	printf("            Seleccione su opcion:\n");
 	printf("            1 Para ingresar datos\n");
-  printf("            2 Para ver un registro\n");
-  printf("            3 Para eliminar un registro\n");
+	printf("            2 Para ver un registro\n");
+  	printf("            3 Para eliminar un registro\n");
 	printf("            4 Para buscar un registro\n");
 	printf("            5 Para salir\n" );
 	printf("******************************************************\n        ");
@@ -68,7 +82,7 @@ void printMenu(){
 
 int getnReg(void *ap){
 	// receive a pointer from a FILE and return the number of registers (struct
-  //petData) that the file has.
+ 	 //petData) that the file has.
 	FILE *dt = ap;
 	fseek(dt,0,SEEK_END);
 	int len = ftell(dt);
@@ -76,6 +90,10 @@ int getnReg(void *ap){
 }
 void NameClinicHistory(int n , void *reg)
 {
+	// funtion that saves the string "historiaClinica-n.txt" in the position of  memmory 
+	// where reg1 points. the variable n is the index of a register.
+//	char *reg = reg1;
+	
     int a = n;
     char inte[10];
     sprintf(inte,"%d",a);
@@ -83,26 +101,29 @@ void NameClinicHistory(int n , void *reg)
     char end[5] = ".txt";
     strcat(cmd,inte);
     strcat(cmd,end);
-	  strcpy(reg,cmd);
+	printf("%s\n",cmd);
+	strcpy(reg,cmd);
     return;
 }
 
 void receiveReg(void *ap){
+	// function that receives information of a new register from the user by the console and stores it
+	// in a struct petData instance located on *ap
 	struct petData *pet;
 	pet = ap;
-	printf("Name: \n");
+	printf("Nombre: \n");
 	scanf("%s" , pet->name);
-	printf("Kind:	\n");
+	printf("Tipo:	\n");
 	scanf("%s" , pet->kind);
-	printf("Age:  \n");
+	printf("Edad:  \n");
 	scanf("%i" , &pet->age);
-	printf("Breed:  \n");
+	printf("Raza:  \n");
 	scanf("%s" , pet->breed);
-	printf("Height:	\n");
+	printf("Estatura:	\n");
 	scanf("%i" , &pet->height);
-	printf("Weight: \n");
+	printf("Peso: \n");
 	scanf("%f" , &pet->weight);
-	printf("Sex: \n");
+	printf("Sexo: \n");
 	scanf(" %c" , &pet->sex);
 	pet->next = -1;
 	return;
@@ -110,11 +131,16 @@ void receiveReg(void *ap){
 
 void hashLastItem(void *ap)
 {
-	//Add one new register to the hash Table
+	//Add the last entered register to its linked list
 	struct petData *pet = ap;
 	int hashInd = hash(pet->name);
 	FILE *hashTable = fopen("hash.dat","r+");
-  FILE *dt = fopen("dataDogs.data","r+");
+	FILE *dt = fopen("dataDogs.data","r+");
+	if (hashTable == NULL || dt == NULL )
+	{
+		perror("Arhivos no encontrados\n");
+		exit(-1);
+	}
 	fseek(hashTable,sizeof(int)*hashInd,SEEK_SET);
 	int next ;
 	fread(&next,sizeof(int),1,hashTable);
@@ -151,6 +177,12 @@ void hashLastItem(void *ap)
 	return;
 }
 void  inputData(){
+	// OPTION  1 of the menu
+	// open the file dataDogs.data for updating
+	// call the function to input information of a new register from console
+	// then writes the information at the end of the file
+	// print a msg of succes 
+   	// finally call the function to add the new register to the hast table	
 	struct petData *pet;
 	pet = malloc(SizePetData);
 	FILE *dt = fopen("dataDogs.data","a");
@@ -164,14 +196,30 @@ void  inputData(){
 	return;
 }
 void showData() {
+
+	// a function that shows the number of current registers on the file and then ask for a numter to the user to print
+	// the information of that register
+	// then the user decides if he want to open the clinicHistory of the register
 	FILE *dt = fopen("dataDogs.data","r");
+	if(dt == NULL)
+	{
+		printf("No hay archivo de registros");
+		return ;
+	}
 	struct petData *pet;
-	printf("print\n");
-	printf("Numero de registros : %i \n" ,getnReg(dt));
+//	printf("print\n");
+	int nreg = getnReg(dt);
+	printf("Numero de registros : %i \n" ,nreg);
+	if(nreg == 0 )
+	{
+		printf("No hay registros\n");
+		return ;
+	}
 	printf("Ingrese el numero de registro que desea ver \n" );
 	int indReg;
 	scanf("%i",&indReg);
-	while (indReg > getnReg(dt)||indReg < 1){
+	// check if the input is valid
+	while (indReg > nreg||indReg < 1){
 		printf("Numero de registro invalido. Intente de nuevo: \n");
 		scanf("%i",&indReg);
 	}
@@ -185,16 +233,25 @@ void showData() {
 	char opt;
 	scanf(" %c" , &opt ) ;
 	char cmd1[50] = "nano ";
-	char cmd[20] ;
+//	printf("%s\n",cmd1);
+	char cmd[35] ;
 	if ( opt == 'y' || opt == 'Y' ){
+//		printf("%s\n", cmd1);
 		NameClinicHistory(indReg,cmd);
+//		printf("%s\n", cmd);
+//		printf("%s\n", cmd1);
 		strcat(cmd1 , cmd);
+//		printf(" msg %s\n",cmd1);
 		system(cmd1);
 	}
 	toContinue();
 	return;
 }
 void delClinicHistory(int _delIndex, int _lastIndex){
+	// a fuction that receives the index of the deleted element of the file and the index of the last element of the file
+	// if the clinic history of the deleted element exists is deleted
+	// if the last register has clinic history file it changes it name because last element is moved where the deleted element was
+	 
 	int lastIndex = _lastIndex;
 	int delIndex = _delIndex;
 	char nameCHDel[30];
@@ -219,6 +276,11 @@ void fixHash(int indx)
 	FILE *hashTable;
 	dt = fopen("dataDogs.data","r+");
 	hashTable = fopen("hash.dat","r+");
+	if(dt == NULL || hashTable == NULL )
+	{
+		perror("Archivos no encontrados\n");
+		exit(-1);
+	}
 	struct petData *pet;
 	pet = malloc(SizePetData);
 	int Delind = indx - 1 ;
@@ -302,20 +364,35 @@ void fixHash(int indx)
 	return;
 }
 void delete(){
+
+
+	//Option 3 of the app
+
+	// a fuction that asks for the index of a register to delete
+	// to delete the register a temporal file is created where all the registers all copied excepted for the deleted one
+	// and the last register is writed where the deleted register was
+	// then the original file is deleted and the temporal file is renamed as the original 
 	FILE *dt;
 	FILE *newdt;
 	struct petData* pet ;
 	dt = fopen("dataDogs.data", "a+");
+	if(dt == NULL )
+	{
+		perror("archivo no encontrado\n");
+		exit(-1);
+	}
 	int numRegDel;
 	int nReg = getnReg(dt);
 	printf("El numero actual de registros es: %i \n " , nReg );
 	printf("Ingrese el numero de registro que desea borrar: \n");
 	fclose(dt);
 	scanf("%i" , &numRegDel );
+	// check if the number entered is valid
 	while (numRegDel > nReg||numRegDel < 1){
 		printf("Numero de registro invalido. Intente de nuevo: \n");
 		scanf("%i",&numRegDel);
 	}
+	// call a function to modify the linked list of the deleted item and the last item
 	fixHash(numRegDel);
 	dt = fopen("dataDogs.data","a+");
 	newdt =	fopen("dataDogsNew.data" , "a+");
@@ -326,17 +403,25 @@ void delete(){
 	pet = malloc(SizePetData);
 	for ( int i = 0 ; i < nReg-1 ; i ++){
 		fseek(dt,SizePetData*i, SEEK_SET);
+	
+		// if the position is equal where the deleted register was, the last item is wrote
+		// and continue with the next position
 		if( i == numRegDel-1) {
 			fwrite(tmp,SizePetData,1,newdt);
 			continue;
 		}
+		
 		fread(pet , SizePetData,1,dt);
+		// write the ith register from the original file on the temporal file 
 		fwrite(pet,SizePetData , 1 , newdt);
 	}
+	
 	delClinicHistory(numRegDel,nReg);
 	free(pet);
 	fclose(dt);
 	fclose(newdt);
+	// the original file is replaced by the temporal file
+	
 	remove("dataDogs.data");
 	rename("dataDogsNew.data" , "dataDogs.data");
 	printf("Registro %i removido de manera exitosa \n",numRegDel);;
@@ -354,6 +439,11 @@ void search(){
 	FILE *dt;
 	hashTable = fopen("hash.dat","r");
 	dt = fopen("dataDogs.data","r");
+	if(hashTable == NULL || dt == NULL)
+	{
+		perror("Archivo no encontrado\n");
+		exit(-1);
+	}
 	int cReg = 0;
 	fseek(hashTable,sizeof(int)*hashInd,SEEK_SET);
 	int next ;
@@ -393,10 +483,14 @@ void search(){
 	return;
 }
 void exitApp(){
+	// option 5
+	// print a goodbye msg
+	// and then call the function exit to end the execution of the program
 	printf("Vuelva pronto \n");
 	exit(0);
 }
 void invalidOption(){
+	// function that prints a warning msg
 	printf("Usted ha seleccionado una opcion invalida. Intente de nuevo. \n" );
 	return;
 }
@@ -405,9 +499,10 @@ int main (){
 		pet = malloc(sizeof (struct petData));
 		printMenu();
 		int option ;
-
+		// wait for the user to input an option 
 		while(	scanf("%i" , &option)){
 
+			// choose the case of the number entered by the user
 			switch(option){
 				case 1 :
 					inputData();

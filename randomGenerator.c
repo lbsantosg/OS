@@ -6,7 +6,7 @@
 #define SizePetData sizeof(struct petData)
 const int NumberRegisters = 1000;
 const int hashSize = 7919;
-int hashLast[10000];
+int hashLast[10000]; // array to store the last item of the hash on each position
 struct petData{
 		char name[32];
 		char kind[32];
@@ -75,6 +75,7 @@ void printHashTable()
 }
 void initHash()
 {
+	// Reads every register in dataDogs and locates it in the hash
 	FILE *hashTable, *data;
 	hashTable = fopen("hash.dat","r+");
 	data = fopen("dataDogs.data","r+");
@@ -93,7 +94,10 @@ void initHash()
 		int indHash = hash(pet->name);
 		fseek(hashTable, sizeof(int) * indHash, SEEK_SET);
 		int next = hashLast[indHash];
-		if( hashLast[indHash] == -1 )
+		//if the hash is in -1, means that it has no register in there by the moment
+		//so, it locates the curren index in the hash file and store it on the
+		// hashLast array
+		if( next == -1 )
 		{
 			fseek(hashTable,sizeof(int)*indHash,SEEK_SET);
 			fwrite(&i,sizeof(int),1,hashTable);
@@ -101,12 +105,15 @@ void initHash()
 		}
 		else
 		{
+			//if it is not -1 means that already has a register, so locates the pointer
+			// of dataDogs in the next register of the hash ("next") and reads it on pet
+			//Then write pet on petData and finaly update the last item of the hash
 			fseek(data,SizePetData*next,SEEK_SET);
 			fread(pet,SizePetData,1,data);
 			pet->next = i;
 			obj = SizePetData*next;
 			dif = obj - ftell(data);
-			fseek(data,dif,SEEK_CUR);				
+			fseek(data,dif,SEEK_CUR);
 			fwrite(pet,SizePetData,1,data);
 			hashLast[indHash] = i;
 		}
@@ -120,58 +127,61 @@ void initHash()
 int main()
 {
 	srand(time(NULL));
-    char names[2000][32];
-    char tmp[32];
+  char names[2000][32];
+  char tmp[32];
 	FILE *fp;
-    fp = fopen("nombresMascotas.txt","r");
-    int cn = 0;
-    while(fscanf(fp,"%s",names[cn])!=EOF)
-        cn++;
-
-    fclose(fp);
-    fp = fopen("dataDogs.data","w");
-    int r = 0;
-    struct petData *reg;
-    reg = malloc(sizeof(struct petData));
-    for ( int i = 0 ; i < NumberRegisters; i ++ )
+  fp = fopen("nombresMascotas.txt","r");
+  int cn = 0;
+	// counts the amount of available names and store them in an array
+  while(fscanf(fp,"%s",names[cn])!=EOF)
+      cn++;
+  fclose(fp);
+  fp = fopen("dataDogs.data","w");
+  int r = 0;
+  struct petData *reg;
+  reg = malloc(sizeof(struct petData));
+	//creates NumberRegisters registers and store them in DataDogs.dat
+  for ( int i = 0 ; i < NumberRegisters; i ++ )
+  {
+		// randomly select the properties and store them on pet
+    r = rand()%cn; // select a random name
+    strcpy(reg->name,names[r]);
+    strcpy(reg->kind, "Perro");
+    reg->age = rand()%12;// select a random age between 0 and 12
+    reg->sex = ( (rand()%2) ? 'M' : 'F'); // select the sex
+    float w = (rand()% 600) + 1; // select the weight
+    w /= 10.0;
+    reg->weight = w;
+    reg->height = (rand() % 120) + 10;
+		// select one breed from a list of breeds
+    int ind = rand() % 7;
+    switch (ind)
     {
-        r = rand()%cn;
-        strcpy(reg->name,names[r]);
-        strcpy(reg->kind, "Perro");
-        reg->age = rand()%12;
-        reg->sex = ( (rand()%2) ? 'M' : 'F');
-        float w = (rand()% 600) + 1;
-        w /= 10.0;
-        reg->weight = w;
-        reg->height = (rand() % 120) + 10;
-        int ind = rand() % 7;
-        switch (ind)
-        {
-            case 0:
-                strcpy(reg->breed,"Salchicha");
-                break;
-            case 1:
-                strcpy(reg->breed,"Shitzu");
-                break;
-            case 2:
-                strcpy(reg->breed,"Xoloescuincle");
-                break;
-            case 3:
-                strcpy(reg->breed,"Criollo");
-                break;
-            case 4:
-                strcpy(reg->breed,"PastorAleman");
-                break;
-            case 5:
-                strcpy(reg->breed,"Golden");
-                break;
-			case 6:
-                strcpy(reg->breed,"Unknown");
-                break;
-        }
-		reg->next = -1;
-        fwrite(reg,sizeof(struct petData),1,fp);
+       case 0:
+              strcpy(reg->breed,"Salchicha");
+              break;
+        case 1:
+              strcpy(reg->breed,"Shitzu");
+              break;
+        case 2:
+              strcpy(reg->breed,"Xoloescuincle");
+              break;
+        case 3:
+              strcpy(reg->breed,"Criollo");
+              break;
+        case 4:
+              strcpy(reg->breed,"PastorAleman");
+              break;
+        case 5:
+              strcpy(reg->breed,"Golden");
+              break;
+    		case 6:
+              strcpy(reg->breed,"Unknown");
+              break;
     }
+		reg->next = -1; // at the beggining the hash hasn't been created
+    fwrite(reg,sizeof(struct petData),1,fp); // store pet in DataDogs.dat
+  }
     free(reg);
     fclose(fp);
     initHashFile();

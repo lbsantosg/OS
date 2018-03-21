@@ -19,6 +19,7 @@ struct petData{
 
 int hash(char *st)
 {
+	// Hash function: recieve one character string and return an integer
 	int size = strlen(st);
 	int b = 26;
 	int mult = 1;
@@ -66,6 +67,8 @@ void printMenu(){
 }
 
 int getnReg(void *ap){
+	// receive a pointer from a FILE and return the number of registers (struct
+  //petData) that the file has.
 	FILE *dt = ap;
 	fseek(dt,0,SEEK_END);
 	int len = ftell(dt);
@@ -80,7 +83,7 @@ void NameClinicHistory(int n , void *reg)
     char end[5] = ".txt";
     strcat(cmd,inte);
     strcat(cmd,end);
-	strcpy(reg , cmd);
+	  strcpy(reg,cmd);
     return;
 }
 
@@ -107,27 +110,33 @@ void receiveReg(void *ap){
 
 void hashLastItem(void *ap)
 {
+	//Add one new register to the hash Table
 	struct petData *pet = ap;
 	int hashInd = hash(pet->name);
 	FILE *hashTable = fopen("hash.dat","r+");
-    FILE *dt = fopen("dataDogs.data","r+");
+  FILE *dt = fopen("dataDogs.data","r+");
 	fseek(hashTable,sizeof(int)*hashInd,SEEK_SET);
 	int next ;
 	fread(&next,sizeof(int),1,hashTable);
 	if(next == -1)
 	{
+		//if the hash doesn't has any register, locates the actual register
+		// in the "head"
 		fseek(hashTable,sizeof(int)*hashInd,SEEK_SET);
 		next = getnReg(dt) -1;
 		fwrite(&next,sizeof(int),1,hashTable);
 	}
 	else
 	{
+		// if the hash has already any register, go throught the hash
+		// using checking the "next" attribute of each pet
 		while(1<2)
 		{
 			fseek(dt,SizePetData*next,SEEK_SET);
 			fread(pet,SizePetData,1,dt);
 			if(pet->next == -1 )
 			{
+				//when the tail is found, locates the new register in the last position
 				pet->next = getnReg(dt) -1 ;
 				fseek(dt,SizePetData*next,SEEK_SET);
 				fwrite(pet,SizePetData,1,dt);
@@ -202,36 +211,46 @@ void delClinicHistory(int _delIndex, int _lastIndex){
 	}
 	return;
 }
-void fixHash(int ind)
+void fixHash(int indx)
 {
+	//fixes the hasTable after one register has been deleted
+	//1.Shifts the last register with the one that will be delete
 	FILE *dt;
 	FILE *hashTable;
 	dt = fopen("dataDogs.data","r+");
 	hashTable = fopen("hash.dat","r+");
 	struct petData *pet;
 	pet = malloc(SizePetData);
-	ind = ind - 1 ;
+	int Delind = indx - 1 ;
 	int indLast = getnReg(dt) -1;
+	// locates the pointer in the last register of DataPet.data (this one will be shifting) and
+	// reads it on pet, then get the name and make the hash.
 	fseek(dt,SizePetData*indLast,SEEK_SET);
 	fread(pet,SizePetData,1,dt);
 	int hashInd = hash(pet->name);
 	int next ;
+	// locates the pointer in the position of the hash of pet and reads it in next
 	fseek(hashTable,sizeof(int)*hashInd,SEEK_SET);
 	fread(&next,sizeof(int),1,hashTable);
 	if(next == indLast)
 	{
+		// if the index that has been read is the same as next, then writes the
+		// index of the register that will be remove
 		fseek(hashTable,sizeof(int)*hashInd,SEEK_SET);
-		fwrite(&ind,sizeof(int),1,hashTable);
+		fwrite(&Delind,sizeof(int),1,hashTable);
 	}
 	else
 	{
 		while(1<2)
 		{
+			//continues reading throught the hash using the pointer "next" of each structure
+			// and when the number of the last register is found, it is changed for the
+			// number of the register that will be delete
 			fseek(dt,SizePetData*next,SEEK_SET);
 			fread(pet,SizePetData,1,dt);
 			if(pet->next == indLast)
 			{
-				pet->next = ind;
+				pet->next = Delind;
 				fseek(dt,SizePetData*next,SEEK_SET);
 				fwrite(pet,SizePetData,1,dt);
 				break;
@@ -240,14 +259,20 @@ void fixHash(int ind)
 				next = pet->next;
 		}
 	}
+	//2. The register that will be remove is deleted from the hash
+	// Locates the pointer of DataDogs.data in the position of the register that
+	// will be remove, then reads it on "delete" and gets the hash
+	// It will look for the register of "delete" through the hash and when it is
+	//found the pointer of the previous will point to the register that is pointed
+	// by "delete" instead of the register of "delete"
 	struct petData *delete;
 	delete = malloc(SizePetData);
-	fseek(dt,SizePetData*ind,SEEK_SET);
+	fseek(dt,SizePetData*Delind,SEEK_SET);
 	fread(delete,SizePetData,1,dt);
 	hashInd = hash(delete->name);
 	fseek(hashTable,sizeof(int)*hashInd,SEEK_SET);
 	fread(&next,sizeof(int),1,hashTable);
-	if(next == ind)
+	if(next == Delind)
 	{
 		fseek(hashTable,sizeof(int)*hashInd,SEEK_SET);
 		int tmp = delete->next;
@@ -259,7 +284,7 @@ void fixHash(int ind)
 		{
 			fseek(dt,SizePetData*next,SEEK_SET);
 			fread(pet,SizePetData,1,dt);
-			if(pet->next == ind)
+			if(pet->next == Delind)
 			{
 				pet->next = delete->next;
 				fseek(dt,SizePetData*next,SEEK_SET);
@@ -321,6 +346,7 @@ void delete(){
 }
 
 void search(){
+	// recieves a string and shows all the registers that match with it
 	char toSearch[32];
 	scanf("%s",toSearch);
 	int hashInd = hash(toSearch);
@@ -331,6 +357,10 @@ void search(){
 	int cReg = 0;
 	fseek(hashTable,sizeof(int)*hashInd,SEEK_SET);
 	int next ;
+	// receives the string,make the hash and get the register that is in there.
+	// Then follows the hash until the end (when the next is -1); check that
+	// the string match by complete in order to avoid collitions of different names
+	// and prints it
 	fread(&next,sizeof(int),1,hashTable);
 	struct petData *pet;
 	pet = malloc(SizePetData);
@@ -338,6 +368,8 @@ void search(){
 		toSearch[i] = tolower(toSearch[i]);
 	while(next!=-1)
 	{
+		//reads the register of next in pet, and then read the "next" attribute of
+		// the actual pet.
 		fseek(dt,SizePetData*next,SEEK_SET);
 		fread(pet,SizePetData,1,dt);
 		char tmp[32];
